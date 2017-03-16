@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "nav_msgs/Path.h"
+#include "geometry_msgs/PoseStamped.h"
 
 #include <dynamic_reconfigure/server.h>
 #include <overtaking_maneuver/OvertakingManeuverInputsConfig.h>
@@ -9,6 +10,7 @@
 
 std::string node_name = "overtaking_maneuver_node";
 std::string pub_path = "overtaking_path";
+std::string odom_frame_id = "catvehicle/odom";
 
 // INPUTS
 // V (>= 5 m/s): Initial and final velocity [m/s]
@@ -21,7 +23,7 @@ double input_max_acc = 3.00; // = normal car in the US
 // Simple case
 double input_vel_obstacle = 0;
 // Time step size
-double time_step_size = 0.1;
+double time_step_size = 0.5;
 
 double calculate_total_dis(double input_vel, double input_width,
                            double input_max_acc) {
@@ -75,18 +77,75 @@ int main(int argc, char **argv) {
   while (ros::ok()) {
 
     // OUTPUTS
-    // Trajectory: x(t) and y(t)
+    // Trajectory path: x(t) and y(t)
     // D: Total x-direction distance
     // T: Total time for maneuver
 
-    double d = calculate_total_dis(input_vel, input_width, input_max_acc);
-    double t = calculate_total_time(input_vel, input_width, input_max_acc);
+    double total_dis =
+        calculate_total_dis(input_vel, input_width, input_max_acc);
+    double total_time =
+        calculate_total_time(input_vel, input_width, input_max_acc);
     ROS_INFO("vel %f, width %f, max_acc %f", input_vel, input_width,
              input_max_acc);
-    ROS_INFO("d %f", d);
-    ROS_INFO("t %f", t);
-    double x_start = calculate_x_at_t(input_vel, d, t, 0);
-    double y_start = calculate_y_at_t(input_width, t, 0);
+    ROS_INFO("d %f", total_dis);
+    ROS_INFO("t %f", total_time);
+
+    // init temp pose
+    geometry_msgs::PoseStamped pose_tmp;
+    std_msgs::Header pose_tmp_header;
+    pose_tmp_header.frame_id = odom_frame_id;
+    pose_tmp_header.stamp = ros::Time::now();
+    pose_tmp.header = pose_tmp_header;
+
+    // init temp path
+    nav_msgs::Path path_tmp;
+    std_msgs::Header path_tmp_header;
+    path_tmp_header.frame_id = odom_frame_id;
+    path_tmp_header.stamp = ros::Time::now();
+    path_tmp.header = path_tmp_header;
+
+    double y_t_0 = calculate_y_at_t(input_width, total_time, 0);
+
+    double time = 0;
+    while (time <= total_time) {
+      double x = calculate_x_at_t(input_vel, total_dis, total_time, time);
+      double y = calculate_y_at_t(input_width, total_time, time);
+
+      pose_tmp.pose.position.x = x - total_dis;
+      pose_tmp.pose.position.y = (-1) * y + y_t_0;
+      pose_tmp.pose.position.z = 0;
+
+      pose_tmp.pose.orientation.x = 0;
+      pose_tmp.pose.orientation.y = 0;
+      pose_tmp.pose.orientation.z = 0;
+      pose_tmp.pose.orientation.w = 1;
+
+      path_tmp.poses.push_back(pose_tmp);
+
+      time = time + time_step_size;
+    }
+
+    time = 0;
+    while (time <= total_time) {
+      double x = calculate_x_at_t(input_vel, total_dis, total_time, time);
+      double y = calculate_y_at_t(input_width, total_time, time);
+
+      pose_tmp.pose.position.x = x;
+      pose_tmp.pose.position.y = y;
+      pose_tmp.pose.position.z = 0;
+
+      pose_tmp.pose.orientation.x = 0;
+      pose_tmp.pose.orientation.y = 0;
+      pose_tmp.pose.orientation.z = 0;
+      pose_tmp.pose.orientation.w = 1;
+
+      path_tmp.poses.push_back(pose_tmp);
+
+      time = time + time_step_size;
+    }
+
+    pub_trajectory.publish(path_tmp);
+    path_tmp.poses.clear();
 
     ros::spinOnce();
     loop_rate.sleep();
