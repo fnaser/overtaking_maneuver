@@ -1,0 +1,8 @@
+<launch>
+  <arg name="veh" default="catvehicle"/>
+
+  <group ns="$(arg veh)">
+    <node name="overtaking_maneuver_node" pkg="overtaking_maneuver" type="overtaking_maneuver_node" respawn="false" output="screen"/>
+  </group>
+
+</launch>
