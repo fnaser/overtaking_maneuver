@@ -1,0 +1,13 @@
+<launch>
+  <arg name="veh" default="catvehicle"/>
+
+  <group ns="$(arg veh)">
+
+    <node pkg="golfcar_ppc" type="purepursuit_controller" name="purepursuitController">
+      <param name="inv_ppc" value="false"/>
+      <param name="robot_frame" value="catvehicle/base_link"/>
+    </node>
+
+  </group>
+
+</launch>

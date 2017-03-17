@@ -2,7 +2,14 @@
   <arg name="veh" default="catvehicle"/>
 
   <group ns="$(arg veh)">
-    <node name="overtaking_maneuver_node" pkg="overtaking_maneuver" type="overtaking_maneuver_node" respawn="false" output="screen"/>
+
+    <node name="overtaking_maneuver_node" pkg="overtaking_maneuver" type="overtaking_maneuver_node" respawn="false" output="screen">
+      <remap from="overtaking_path" to="route_plan"/>
+    </node>
+
+    <node name="helper_node_repub_steering_cmd" pkg="overtaking_maneuver" type="helper_node_repub_steering_cmd" respawn="false" output="screen">
+    </node>
+
   </group>
 
 </launch>
