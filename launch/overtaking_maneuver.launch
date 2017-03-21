@@ -7,9 +7,6 @@
       <remap from="overtaking_path" to="route_plan"/>
     </node>
 
-    <node name="helper_node_repub_steering_cmd" pkg="overtaking_maneuver" type="helper_node_repub_steering_cmd" respawn="false" output="screen">
-    </node>
-
   </group>
 
 </launch>
