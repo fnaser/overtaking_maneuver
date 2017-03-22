@@ -19,5 +19,7 @@ gzclient
 
 # ~/.bashrc
 
+```
 source /opt/ros/kinetic/setup.bash
 source ~/catkinect_ws/devel/setup.bash
+```
