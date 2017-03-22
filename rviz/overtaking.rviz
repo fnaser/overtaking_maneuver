@@ -170,7 +170,7 @@ Visualization Manager:
       Max Color: 255; 255; 255
       Max Intensity: 999999
       Min Color: 0; 0; 0
-      Min Intensity: 0
+      Min Intensity: 1.11581e-36
       Name: LaserScan
       Position Transformer: XYZ
       Queue Size: 10
@@ -293,8 +293,8 @@ Visualization Manager:
       Scale: 9.13486
       Target Frame: catvehicle/base_link
       Value: TopDownOrtho (rviz)
-      X: 25.6881
-      Y: 24.4303
+      X: -0.365938
+      Y: -1.84268
     Saved: ~
 Window Geometry:
   Displays:
