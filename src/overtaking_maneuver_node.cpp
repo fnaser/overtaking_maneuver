@@ -13,8 +13,8 @@
 
 std::string node_name = "overtaking_maneuver_node";
 std::string pub_path = "overtaking_path";
-std::string sub_odom_topic = "map"; //"odom";
-std::string odom_frame_id = "catvehicle/odom";
+std::string sub_odom_topic = "odom";
+std::string odom_frame_id = "catvehicle/map";
 
 // INPUTS
 // V (>= 5 m/s): Initial and final velocity [m/s]
