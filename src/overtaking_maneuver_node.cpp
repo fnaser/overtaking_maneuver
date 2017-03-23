@@ -1,12 +1,13 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "std_msgs/Bool.h"
-#include "nav_msgs/Path.h"
-#include "nav_msgs/Odometry.h"
-#include "geometry_msgs/PoseStamped.h"
-#include "geometry_msgs/Pose.h"
-#include "geometry_msgs/Twist.h"
-
+#include <ros/ros.h>
+#include <std_msgs/String.h>
+#include <std_msgs/Bool.h>
+#include <nav_msgs/Path.h>
+#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Twist.h>
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
 #include <dynamic_reconfigure/server.h>
 #include <overtaking_maneuver/OvertakingManeuverInputsConfig.h>
 #include <string>
@@ -14,26 +15,31 @@
 
 std::string node_name = "overtaking_maneuver_node";
 std::string sub_user_input_topic = "update_odom_user_input";
-std::string pub_path = "overtaking_path";
+std::string pub_path_topic = "overtaking_path";
+std::string pub_path_topic_test = "overtaking_path_test";
 std::string sub_odom_topic = "odom";
-std::string frame_id = "map";
+std::string robot_name = "catvehicle";
+
+std::string path_frame_id = "map";
+std::string path_pose_frame_id = "";
 
 // INPUTS
 // V (>= 5 m/s): Initial and final velocity [m/s]
 // W: Width of the lane or of the diversion / total y-direction distance [m]
 // A: Magnitude of the maximal resultant acceleration of ego vehicle [m/s^2]
-double input_vel = 15; // 2.77; // = 10 km/s
+double input_vel = 15;
 double input_width = 3.00;
 double input_max_acc = 3.00; // = normal car in the US
 
 // Simple case
-double input_vel_obstacle = 0;
+// double input_vel_obstacle = 0;
+
 // Time step size
 double time_step_size = 0.5;
 // Current pose of ego vehicle
 geometry_msgs::Pose current_pose;
 // Trajectory publisher
-ros::Publisher pub_trajectory;
+ros::Publisher pub_trajectory, pub_trajectory_test;
 // User input
 bool update_odom = true;
 
@@ -81,7 +87,7 @@ void odom_callback(const nav_msgs::Odometry::ConstPtr &odom) {
   }
 }
 
-void publish_trajectory() {
+void publish_trajectory(tf::TransformListener *tflistener) {
 
   // OUTPUTS
   // Trajectory path: x(t) and y(t)
@@ -96,37 +102,43 @@ void publish_trajectory() {
   ROS_INFO("d %f", total_dis);
   ROS_INFO("t %f", total_time);
 
-  // init temp pose
-  geometry_msgs::PoseStamped pose_tmp;
-  std_msgs::Header pose_tmp_header;
-  pose_tmp_header.frame_id = "";//frame_id;
-  pose_tmp_header.stamp = ros::Time::now();
-  pose_tmp.header = pose_tmp_header;
-
-  // init temp path
+  // init temp path in map frame
   nav_msgs::Path path_tmp;
-  std_msgs::Header path_tmp_header;
-  path_tmp_header.frame_id = frame_id;
-  path_tmp_header.stamp = ros::Time::now();
-  path_tmp.header = path_tmp_header;
+  path_tmp.header.frame_id = path_frame_id;
+  path_tmp.header.stamp = ros::Time::now();
+
+  // init temp pose in odom frame
+  geometry_msgs::PoseStamped pose_tmp;
+  pose_tmp.header.frame_id = robot_name + "/odom";
+  pose_tmp.header.stamp = ros::Time::now();
+  pose_tmp.pose.orientation.x = 0;
+  pose_tmp.pose.orientation.y = 0;
+  pose_tmp.pose.orientation.z = 0;
+  pose_tmp.pose.orientation.w = 1;
 
   double y_t_0 = calculate_y_at_t(input_width, total_time, 0);
 
   double time = 0;
   while (time <= total_time) {
+
     double x = calculate_x_at_t(input_vel, total_dis, total_time, time);
     double y = calculate_y_at_t(input_width, total_time, time);
 
+    // Odom frame
     pose_tmp.pose.position.x = (x - total_dis) + current_pose.position.x;
     pose_tmp.pose.position.y = ((-1) * y + y_t_0) + current_pose.position.y;
     pose_tmp.pose.position.z = (0) + current_pose.position.z;
 
-    pose_tmp.pose.orientation.x = (0) + current_pose.orientation.x;
-    pose_tmp.pose.orientation.y = (0) + current_pose.orientation.y;
-    pose_tmp.pose.orientation.z = (0) + current_pose.orientation.z;
-    pose_tmp.pose.orientation.w = (1) + current_pose.orientation.w;
+    // Transform
+    geometry_msgs::PoseStamped pose_tmp_map;
+    tflistener->transformPose(robot_name + "/map", pose_tmp, pose_tmp_map);
 
+    // Map frame
+    pose_tmp = pose_tmp_map;
+
+    pose_tmp.header.frame_id = path_pose_frame_id;
     path_tmp.poses.push_back(pose_tmp);
+    pose_tmp.header.frame_id = robot_name + "/odom";
 
     time = time + time_step_size;
   }
@@ -140,17 +152,24 @@ void publish_trajectory() {
     pose_tmp.pose.position.y = (y) + current_pose.position.y;
     pose_tmp.pose.position.z = (0) + current_pose.position.z;
 
-    pose_tmp.pose.orientation.x = (0) + current_pose.orientation.x;
-    pose_tmp.pose.orientation.y = (0) + current_pose.orientation.y;
-    pose_tmp.pose.orientation.z = (0) + current_pose.orientation.z;
-    pose_tmp.pose.orientation.w = (1) + current_pose.orientation.w;
+    // Transform
+    geometry_msgs::PoseStamped pose_tmp_map;
+    tflistener->transformPose(robot_name + "/map", pose_tmp, pose_tmp_map);
 
+    // Map frame
+    pose_tmp = pose_tmp_map;
+
+    pose_tmp.header.frame_id = path_pose_frame_id;
     path_tmp.poses.push_back(pose_tmp);
+    pose_tmp.header.frame_id = robot_name + "/odom";
 
     time = time + time_step_size;
   }
 
   pub_trajectory.publish(path_tmp);
+  path_tmp.header.frame_id = robot_name + "/map";
+  pub_trajectory_test.publish(path_tmp);
+  // ROS_INFO("path.poses.size() %d", path_tmp.poses.size());
   path_tmp.poses.clear();
 }
 
@@ -166,12 +185,17 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, node_name);
 
   ros::NodeHandle n;
-  pub_trajectory = n.advertise<nav_msgs::Path>(pub_path, 1000);
+  pub_trajectory = n.advertise<nav_msgs::Path>(pub_path_topic, 1000);
+  pub_trajectory_test =
+      n.advertise<nav_msgs::Path>(pub_path_topic_test, 1000); // SMART
   ros::Subscriber sub_odom =
       n.subscribe<nav_msgs::Odometry>(sub_odom_topic, 1000, odom_callback);
   ros::Rate loop_rate(10);
   ros::Subscriber sub_user_input = n.subscribe<std_msgs::Bool>(
       sub_user_input_topic, 1000, user_input_callback);
+
+  // TF listener
+  tf::TransformListener tflistener;
 
   dynamic_reconfigure::Server<
       overtaking_maneuver::OvertakingManeuverInputsConfig> server;
@@ -182,7 +206,19 @@ int main(int argc, char **argv) {
 
   while (ros::ok()) {
 
-    publish_trajectory();
+    tf::StampedTransform transform;
+    try {
+      tflistener.lookupTransform(robot_name + "/map", robot_name + "/odom",
+                                 ros::Time(0), transform);
+    } catch (tf::TransformException ex) {
+      ROS_ERROR("%s", ex.what());
+      ros::Duration(1.0).sleep();
+    }
+
+    if (update_odom) {
+      publish_trajectory(&tflistener);
+      update_odom = false; // pub only once
+    }
 
     ros::spinOnce();
     loop_rate.sleep();
