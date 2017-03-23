@@ -288,6 +288,21 @@ Visualization Manager:
       Topic: /catvehicle/overtaking_path_test
       Unreliable: false
       Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.1
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 1
+      Head Radius: 2
+      Name: Pose
+      Shaft Length: 10
+      Shaft Radius: 0.5
+      Shape: Arrow
+      Topic: /catvehicle/current_pose
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -320,11 +335,11 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 10.8308
+      Scale: 31.8704
       Target Frame: catvehicle/base_link
       Value: TopDownOrtho (rviz)
-      X: 3.29868
-      Y: 0.861745
+      X: 0.206576
+      Y: 2.19894
     Saved: ~
 Window Geometry:
   Displays:

@@ -15,9 +15,10 @@
 
 std::string node_name = "overtaking_maneuver_node";
 std::string sub_user_input_topic = "update_odom_user_input";
+std::string sub_odom_topic = "odom";
 std::string pub_path_topic = "overtaking_path";
 std::string pub_path_topic_test = "overtaking_path_test";
-std::string sub_odom_topic = "odom";
+std::string pub_current_pose_topic = "current_pose";
 std::string robot_name = "catvehicle";
 
 std::string path_frame_id = "map";
@@ -37,9 +38,9 @@ double input_max_acc = 3.00; // = normal car in the US
 // Time step size
 double time_step_size = 0.5;
 // Current pose of ego vehicle
-geometry_msgs::Pose current_pose;
+geometry_msgs::PoseStamped current_pose;
 // Trajectory publisher
-ros::Publisher pub_trajectory, pub_trajectory_test;
+ros::Publisher pub_trajectory, pub_trajectory_test, pub_current_pose;
 // User input
 bool update_odom = true;
 
@@ -76,14 +77,17 @@ void user_input_callback(const std_msgs::Bool::ConstPtr &msg) {
 
 void odom_callback(const nav_msgs::Odometry::ConstPtr &odom) {
   if (update_odom) {
-    current_pose.position.x = odom->pose.pose.position.x;
-    current_pose.position.y = odom->pose.pose.position.y;
-    current_pose.position.z = odom->pose.pose.position.z;
+    current_pose.header.frame_id = odom->header.frame_id;
+    current_pose.header.stamp = odom->header.stamp;
 
-    current_pose.orientation.x = odom->pose.pose.orientation.x;
-    current_pose.orientation.y = odom->pose.pose.orientation.y;
-    current_pose.orientation.z = odom->pose.pose.orientation.z;
-    current_pose.orientation.w = odom->pose.pose.orientation.w;
+    current_pose.pose.position.x = odom->pose.pose.position.x;
+    current_pose.pose.position.y = odom->pose.pose.position.y;
+    current_pose.pose.position.z = odom->pose.pose.position.z;
+
+    current_pose.pose.orientation.x = odom->pose.pose.orientation.x;
+    current_pose.pose.orientation.y = odom->pose.pose.orientation.y;
+    current_pose.pose.orientation.z = odom->pose.pose.orientation.z;
+    current_pose.pose.orientation.w = odom->pose.pose.orientation.w;
   }
 }
 
@@ -125,9 +129,10 @@ void publish_trajectory(tf::TransformListener *tflistener) {
     double y = calculate_y_at_t(input_width, total_time, time);
 
     // Odom frame
-    pose_tmp.pose.position.x = (x - total_dis) + current_pose.position.x;
-    pose_tmp.pose.position.y = ((-1) * y + y_t_0) + current_pose.position.y;
-    pose_tmp.pose.position.z = (0) + current_pose.position.z;
+    pose_tmp.pose.position.x = (x - total_dis) + current_pose.pose.position.x;
+    pose_tmp.pose.position.y =
+        ((-1) * y + y_t_0) + current_pose.pose.position.y;
+    pose_tmp.pose.position.z = (0) + current_pose.pose.position.z;
 
     // Transform
     geometry_msgs::PoseStamped pose_tmp_map;
@@ -148,9 +153,9 @@ void publish_trajectory(tf::TransformListener *tflistener) {
     double x = calculate_x_at_t(input_vel, total_dis, total_time, time);
     double y = calculate_y_at_t(input_width, total_time, time);
 
-    pose_tmp.pose.position.x = (x) + current_pose.position.x;
-    pose_tmp.pose.position.y = (y) + current_pose.position.y;
-    pose_tmp.pose.position.z = (0) + current_pose.position.z;
+    pose_tmp.pose.position.x = (x) + current_pose.pose.position.x;
+    pose_tmp.pose.position.y = (y) + current_pose.pose.position.y;
+    pose_tmp.pose.position.z = (0) + current_pose.pose.position.z;
 
     // Transform
     geometry_msgs::PoseStamped pose_tmp_map;
@@ -186,6 +191,8 @@ int main(int argc, char **argv) {
 
   ros::NodeHandle n;
   pub_trajectory = n.advertise<nav_msgs::Path>(pub_path_topic, 1000);
+  pub_current_pose =
+      n.advertise<geometry_msgs::PoseStamped>(pub_current_pose_topic, 1000);
   pub_trajectory_test =
       n.advertise<nav_msgs::Path>(pub_path_topic_test, 1000); // SMART
   ros::Subscriber sub_odom =
@@ -217,6 +224,7 @@ int main(int argc, char **argv) {
 
     if (update_odom) {
       publish_trajectory(&tflistener);
+      pub_current_pose.publish(current_pose);
       update_odom = false; // pub only once
     }
 
