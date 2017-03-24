@@ -91,6 +91,39 @@ void odom_callback(const nav_msgs::Odometry::ConstPtr &odom) {
   }
 }
 
+void rotate_path(nav_msgs::Path *path, tf::TransformListener *tflistener) {
+  geometry_msgs::PoseStamped pose_tmp_map;
+  geometry_msgs::PoseStamped pose_tmp_odom;
+  pose_tmp_odom.header.frame_id = robot_name + "/odom";
+  pose_tmp_odom.header.stamp = ros::Time::now();
+  pose_tmp_odom.pose = current_pose.pose;
+  pose_tmp_odom.pose.orientation.x = 0;
+  pose_tmp_odom.pose.orientation.y = 0;
+  pose_tmp_odom.pose.orientation.z = 0;
+  pose_tmp_odom.pose.orientation.w = 1;
+  tflistener->transformPose(robot_name + "/map", pose_tmp_odom, pose_tmp_map);
+
+  tf::Pose pose;
+  tf::poseMsgToTF(current_pose.pose, pose);
+  double yaw_angle = tf::getYaw(pose.getRotation());
+  double cos_yaw = cos(yaw_angle);
+  double sin_yaw = sin(yaw_angle);
+
+  // Rotation of each point
+  for (int i = 0; i < path->poses.size(); i++) {
+    double x = path->poses[i].pose.position.x;
+    double y = path->poses[i].pose.position.y;
+    double x_origin = x - pose_tmp_map.pose.position.x;
+    double y_origin = y - pose_tmp_map.pose.position.y;
+    double x_new = x_origin * cos_yaw - y_origin * sin_yaw;
+    double y_new = x_origin * sin_yaw + y_origin * cos_yaw;
+    x_new += pose_tmp_map.pose.position.x;
+    y_new += pose_tmp_map.pose.position.y;
+    path->poses[i].pose.position.x = x_new;
+    path->poses[i].pose.position.y = y_new;
+  }
+}
+
 void publish_trajectory(tf::TransformListener *tflistener) {
 
   // OUTPUTS
@@ -121,6 +154,7 @@ void publish_trajectory(tf::TransformListener *tflistener) {
   pose_tmp.pose.orientation.w = 1;
 
   double y_t_0 = calculate_y_at_t(input_width, total_time, 0);
+  double offset_x = total_dis;
 
   double time = 0;
   while (time <= total_time) {
@@ -129,7 +163,8 @@ void publish_trajectory(tf::TransformListener *tflistener) {
     double y = calculate_y_at_t(input_width, total_time, time);
 
     // Odom frame
-    pose_tmp.pose.position.x = (x - total_dis) + current_pose.pose.position.x;
+    pose_tmp.pose.position.x =
+        (x - total_dis) + current_pose.pose.position.x + offset_x;
     pose_tmp.pose.position.y =
         ((-1) * y + y_t_0) + current_pose.pose.position.y;
     pose_tmp.pose.position.z = (0) + current_pose.pose.position.z;
@@ -142,7 +177,8 @@ void publish_trajectory(tf::TransformListener *tflistener) {
     pose_tmp = pose_tmp_map;
 
     pose_tmp.header.frame_id = path_pose_frame_id;
-    path_tmp.poses.push_back(pose_tmp);
+    // path_tmp.poses.push_back(pose_tmp);
+    path_tmp.poses.push_back(pose_tmp_map);
     pose_tmp.header.frame_id = robot_name + "/odom";
 
     time = time + time_step_size;
@@ -153,7 +189,7 @@ void publish_trajectory(tf::TransformListener *tflistener) {
     double x = calculate_x_at_t(input_vel, total_dis, total_time, time);
     double y = calculate_y_at_t(input_width, total_time, time);
 
-    pose_tmp.pose.position.x = (x) + current_pose.pose.position.x;
+    pose_tmp.pose.position.x = (x) + current_pose.pose.position.x + offset_x;
     pose_tmp.pose.position.y = (y) + current_pose.pose.position.y;
     pose_tmp.pose.position.z = (0) + current_pose.pose.position.z;
 
@@ -165,11 +201,14 @@ void publish_trajectory(tf::TransformListener *tflistener) {
     pose_tmp = pose_tmp_map;
 
     pose_tmp.header.frame_id = path_pose_frame_id;
-    path_tmp.poses.push_back(pose_tmp);
+    // path_tmp.poses.push_back(pose_tmp);
+    path_tmp.poses.push_back(pose_tmp_map);
     pose_tmp.header.frame_id = robot_name + "/odom";
 
     time = time + time_step_size;
   }
+
+  rotate_path(&path_tmp, tflistener);
 
   pub_trajectory.publish(path_tmp);
   path_tmp.header.frame_id = robot_name + "/map";
@@ -193,15 +232,13 @@ int main(int argc, char **argv) {
   pub_trajectory = n.advertise<nav_msgs::Path>(pub_path_topic, 1000);
   pub_current_pose =
       n.advertise<geometry_msgs::PoseStamped>(pub_current_pose_topic, 1000);
-  pub_trajectory_test =
-      n.advertise<nav_msgs::Path>(pub_path_topic_test, 1000); // SMART
+  pub_trajectory_test = n.advertise<nav_msgs::Path>(pub_path_topic_test, 1000);
   ros::Subscriber sub_odom =
       n.subscribe<nav_msgs::Odometry>(sub_odom_topic, 1000, odom_callback);
   ros::Rate loop_rate(10);
   ros::Subscriber sub_user_input = n.subscribe<std_msgs::Bool>(
       sub_user_input_topic, 1000, user_input_callback);
 
-  // TF listener
   tf::TransformListener tflistener;
 
   dynamic_reconfigure::Server<
