@@ -103,7 +103,7 @@ generate_dynamic_reconfigure_options(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+   INCLUDE_DIRS include
 #  LIBRARIES overtaking_maneuver
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
@@ -117,6 +117,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -131,7 +132,7 @@ include_directories(
 # add_dependencies(overtaking_maneuver ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(overtaking_maneuver_node src/overtaking_maneuver_node.cpp)
+add_executable(overtaking_maneuver_node src/overtaking_maneuver_node.cpp src/overtaking_maneuver.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
