@@ -22,12 +22,12 @@ int main(int argc, char **argv) {
   private_node_handle_.param("use_dynamic_reconfig", use_dynamic_reconfig,
                              bool(true));
 
+  tf::TransformListener tflistener;
+
   OvertakingManeuver *om = new OvertakingManeuver(
-      &n, update_odom, use_dynamic_reconfig, sub_user_input_topic,
+      &n, &tflistener, update_odom, use_dynamic_reconfig, sub_user_input_topic,
       sub_odom_topic, pub_path_topic, pub_path_topic_test,
       pub_current_pose_topic, robot_name, path_frame_id, path_pose_frame_id);
-
-  tf::TransformListener tflistener;
 
   ros::Rate loop_rate(10);
 
@@ -39,6 +39,11 @@ int main(int argc, char **argv) {
   f = boost::bind(&OvertakingManeuver::dynamic_config_callback, om, _1, _2);
   server.setCallback(f);
 
+  // http://wiki.ros.org/roscpp_tutorials/Tutorials/UsingClassMethodsAsCallbacks
+  ros::ServiceServer ss =
+      n.advertiseService("publish_overtaking_trajectory",
+                         &OvertakingManeuver::publish_trajectory, om);
+
   while (ros::ok()) {
 
     tf::StampedTransform transform;
@@ -48,11 +53,6 @@ int main(int argc, char **argv) {
     } catch (tf::TransformException ex) {
       ROS_ERROR("%s", ex.what());
       ros::Duration(1.0).sleep();
-    }
-
-    if (om->get_update_odom()) {
-      om->publish_trajectory(&tflistener, 5, 5, 5);
-      om->set_update_odom(false); // pub only once
     }
 
     ros::spinOnce();

@@ -1,0 +1,5 @@
+float64 input_vel
+float64 input_width
+float64 input_max_acc
+---
+bool finished

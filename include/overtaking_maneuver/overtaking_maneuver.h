@@ -13,6 +13,7 @@
 #include <tf/transform_listener.h>
 #include <dynamic_reconfigure/server.h>
 #include <overtaking_maneuver/OvertakingManeuverInputsConfig.h>
+#include <overtaking_maneuver/PublishOvertakingTrajectory.h>
 #include <string>
 #include <cmath>
 
@@ -46,6 +47,7 @@ private:
   string path_pose_frame_id;
 
   ros::NodeHandle *n;
+  tf::TransformListener *tflistener;
   ros::Publisher pub_trajectory, pub_trajectory_test, pub_current_pose;
   ros::Subscriber sub_odom, sub_user_input;
 
@@ -63,15 +65,16 @@ private:
 public:
   ~OvertakingManeuver();
   OvertakingManeuver();
-  OvertakingManeuver(ros::NodeHandle *n, bool update_odom,
-                     bool use_dynamic_reconfig, string sub_user_input_topic,
-                     string sub_odom_topic, string pub_path_topic,
-                     string pub_path_topic_test, string pub_current_pose_topic,
-                     string robot_name, string path_frame_id,
-                     string path_pose_frame_id);
+  OvertakingManeuver(ros::NodeHandle *n, tf::TransformListener *tflistener,
+                     bool update_odom, bool use_dynamic_reconfig,
+                     string sub_user_input_topic, string sub_odom_topic,
+                     string pub_path_topic, string pub_path_topic_test,
+                     string pub_current_pose_topic, string robot_name,
+                     string path_frame_id, string path_pose_frame_id);
 
-  void publish_trajectory(tf::TransformListener *tflistener, double input_vel,
-                          double input_width, double input_max_acc);
+  bool publish_trajectory(
+      overtaking_maneuver::PublishOvertakingTrajectory::Request &req,
+      overtaking_maneuver::PublishOvertakingTrajectory::Response &res);
   void dynamic_config_callback(
       overtaking_maneuver::OvertakingManeuverInputsConfig &config,
       uint32_t level);

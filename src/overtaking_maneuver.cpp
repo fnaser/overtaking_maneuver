@@ -5,11 +5,12 @@ OvertakingManeuver::~OvertakingManeuver() {}
 OvertakingManeuver::OvertakingManeuver() {}
 
 OvertakingManeuver::OvertakingManeuver(
-    ros::NodeHandle *n, bool update_odom, bool use_dynamic_reconfig,
-    string sub_user_input_topic, string sub_odom_topic, string pub_path_topic,
-    string pub_path_topic_test, string pub_current_pose_topic,
-    string robot_name, string path_frame_id, string path_pose_frame_id)
-    : n(n), update_odom(update_odom),
+    ros::NodeHandle *n, tf::TransformListener *tflistener, bool update_odom,
+    bool use_dynamic_reconfig, string sub_user_input_topic,
+    string sub_odom_topic, string pub_path_topic, string pub_path_topic_test,
+    string pub_current_pose_topic, string robot_name, string path_frame_id,
+    string path_pose_frame_id)
+    : n(n), tflistener(tflistener), update_odom(update_odom),
       use_dynamic_reconfig(use_dynamic_reconfig),
       sub_user_input_topic(sub_user_input_topic),
       sub_odom_topic(sub_odom_topic), pub_path_topic(pub_path_topic),
@@ -133,15 +134,14 @@ void OvertakingManeuver::rotate_path(nav_msgs::Path *path,
 // Trajectory path: x(t) and y(t)
 // D: Total x-direction distance
 // T: Total time for maneuver
-void OvertakingManeuver::publish_trajectory(tf::TransformListener *tflistener,
-                                            double new_input_vel,
-                                            double new_input_width,
-                                            double new_input_max_acc) {
+bool OvertakingManeuver::publish_trajectory(
+    overtaking_maneuver::PublishOvertakingTrajectory::Request &req,
+    overtaking_maneuver::PublishOvertakingTrajectory::Response &res) {
 
   if (!use_dynamic_reconfig) {
-    this->input_vel = new_input_vel;
-    this->input_width = new_input_width;
-    this->input_max_acc = new_input_max_acc;
+    this->input_vel = req.input_vel;
+    this->input_width = req.input_width;
+    this->input_max_acc = req.input_max_acc;
   }
 
   double total_dis = calculate_total_dis(input_vel, input_width, input_max_acc);
@@ -229,6 +229,9 @@ void OvertakingManeuver::publish_trajectory(tf::TransformListener *tflistener,
   pub_trajectory_test.publish(path_tmp);
   // ROS_INFO("path.poses.size() %d", path_tmp.poses.size());
   path_tmp.poses.clear();
+
+  res.finished = true;
+  return res.finished;
 }
 
 void OvertakingManeuver::dynamic_config_callback(
