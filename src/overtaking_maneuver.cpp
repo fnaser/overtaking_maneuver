@@ -5,11 +5,13 @@ OvertakingManeuver::~OvertakingManeuver() {}
 OvertakingManeuver::OvertakingManeuver() {}
 
 OvertakingManeuver::OvertakingManeuver(
-    ros::NodeHandle *n, string sub_user_input_topic, string sub_odom_topic,
-    string pub_path_topic, string pub_path_topic_test,
-    string pub_current_pose_topic, string robot_name, string path_frame_id,
-    string path_pose_frame_id)
-    : n(n), sub_user_input_topic(sub_user_input_topic),
+    ros::NodeHandle *n, bool update_odom, bool use_dynamic_reconfig,
+    string sub_user_input_topic, string sub_odom_topic, string pub_path_topic,
+    string pub_path_topic_test, string pub_current_pose_topic,
+    string robot_name, string path_frame_id, string path_pose_frame_id)
+    : n(n), update_odom(update_odom),
+      use_dynamic_reconfig(use_dynamic_reconfig),
+      sub_user_input_topic(sub_user_input_topic),
       sub_odom_topic(sub_odom_topic), pub_path_topic(pub_path_topic),
       pub_path_topic_test(pub_path_topic_test),
       pub_current_pose_topic(pub_current_pose_topic), robot_name(robot_name),
@@ -18,24 +20,27 @@ OvertakingManeuver::OvertakingManeuver(
   input_width = 3.00;
   input_max_acc = 3.00; // = normal car in the US
 
-  update_odom = false;
   time_step_size = 0.5;
 
   pub_trajectory = n->advertise<nav_msgs::Path>(pub_path_topic, 1000);
   pub_current_pose =
       n->advertise<geometry_msgs::PoseStamped>(pub_current_pose_topic, 1000);
   pub_trajectory_test = n->advertise<nav_msgs::Path>(pub_path_topic_test, 1000);
-  sub_odom =
-      n->subscribe<nav_msgs::Odometry>(sub_odom_topic, 1000, &OvertakingManeuver::odom_callback, this);
-  sub_user_input = n->subscribe<std_msgs::Bool>(sub_user_input_topic, 1000,
-                                               &OvertakingManeuver::user_input_callback, this);
+  sub_odom = n->subscribe<nav_msgs::Odometry>(
+      sub_odom_topic, 1000, &OvertakingManeuver::odom_callback, this);
+  sub_user_input = n->subscribe<std_msgs::Bool>(
+      sub_user_input_topic, 1000, &OvertakingManeuver::user_input_callback,
+      this);
+}
 
-//  dynamic_reconfigure::Server<
-//      overtaking_maneuver::OvertakingManeuverInputsConfig> server;
-//  dynamic_reconfigure::Server<
-//      overtaking_maneuver::OvertakingManeuverInputsConfig>::CallbackType f;
-//  f = boost::bind(&OvertakingManeuver::dynamic_config_callback, _1, _2);
-//  server.setCallback(f);
+bool OvertakingManeuver::get_update_odom() { return update_odom; }
+
+void OvertakingManeuver::set_update_odom(bool new_update_odom) {
+  update_odom = new_update_odom;
+}
+
+bool OvertakingManeuver::get_use_dynamic_reconfig() {
+  return use_dynamic_reconfig;
 }
 
 double OvertakingManeuver::calculate_total_dis(double input_vel,
@@ -124,18 +129,27 @@ void OvertakingManeuver::rotate_path(nav_msgs::Path *path,
   }
 }
 
-void OvertakingManeuver::publish_trajectory(tf::TransformListener *tflistener) {
+// OUTPUTS
+// Trajectory path: x(t) and y(t)
+// D: Total x-direction distance
+// T: Total time for maneuver
+void OvertakingManeuver::publish_trajectory(tf::TransformListener *tflistener,
+                                            double new_input_vel,
+                                            double new_input_width,
+                                            double new_input_max_acc) {
 
-  // OUTPUTS
-  // Trajectory path: x(t) and y(t)
-  // D: Total x-direction distance
-  // T: Total time for maneuver
+  if (!use_dynamic_reconfig) {
+    this->input_vel = new_input_vel;
+    this->input_width = new_input_width;
+    this->input_max_acc = new_input_max_acc;
+  }
 
   double total_dis = calculate_total_dis(input_vel, input_width, input_max_acc);
   double total_time =
       calculate_total_time(input_vel, input_width, input_max_acc);
-  ROS_INFO("vel %f, width %f, max_acc %f", input_vel, input_width,
-           input_max_acc);
+
+  ROS_INFO("use_dynamic_reconfig %d vel %f, width %f, max_acc %f",
+           use_dynamic_reconfig, input_vel, input_width, input_max_acc);
   ROS_INFO("d %f", total_dis);
   ROS_INFO("t %f", total_time);
 

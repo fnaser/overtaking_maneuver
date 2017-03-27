@@ -15,14 +15,29 @@ int main(int argc, char **argv) {
 
   ros::NodeHandle n;
 
+  bool update_odom, use_dynamic_reconfig;
+
+  ros::NodeHandle private_node_handle_("~");
+  private_node_handle_.param("update_odom", update_odom, bool(true));
+  private_node_handle_.param("use_dynamic_reconfig", use_dynamic_reconfig,
+                             bool(true));
+
   OvertakingManeuver *om = new OvertakingManeuver(
-      &n, sub_user_input_topic, sub_odom_topic, pub_path_topic,
-      pub_path_topic_test, pub_current_pose_topic, robot_name, path_frame_id,
-      path_pose_frame_id);
+      &n, update_odom, use_dynamic_reconfig, sub_user_input_topic,
+      sub_odom_topic, pub_path_topic, pub_path_topic_test,
+      pub_current_pose_topic, robot_name, path_frame_id, path_pose_frame_id);
 
   tf::TransformListener tflistener;
 
   ros::Rate loop_rate(10);
+
+  // http://wiki.ros.org/ROSNodeTutorialC%2B%2B
+  dynamic_reconfigure::Server<
+      overtaking_maneuver::OvertakingManeuverInputsConfig> server;
+  dynamic_reconfigure::Server<
+      overtaking_maneuver::OvertakingManeuverInputsConfig>::CallbackType f;
+  f = boost::bind(&OvertakingManeuver::dynamic_config_callback, om, _1, _2);
+  server.setCallback(f);
 
   while (ros::ok()) {
 
@@ -35,9 +50,9 @@ int main(int argc, char **argv) {
       ros::Duration(1.0).sleep();
     }
 
-    if (om->update_odom) {
-      om->publish_trajectory(&tflistener);
-      om->update_odom = false; // pub only once
+    if (om->get_update_odom()) {
+      om->publish_trajectory(&tflistener, 5, 5, 5);
+      om->set_update_odom(false); // pub only once
     }
 
     ros::spinOnce();
