@@ -140,7 +140,7 @@ Visualization Manager:
       Max Color: 255; 255; 255
       Max Intensity: 999999
       Min Color: 0; 0; 0
-      Min Intensity: 0
+      Min Intensity: 6.72623e-44
       Name: LaserScan
       Position Transformer: XYZ
       Queue Size: 10
@@ -168,9 +168,9 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 999999
+      Max Intensity: 2.63828e-29
       Min Color: 0; 0; 0
-      Min Intensity: 0
+      Min Intensity: 6.72623e-44
       Name: LaserScan
       Position Transformer: XYZ
       Queue Size: 10
@@ -303,6 +303,38 @@ Visualization Manager:
       Topic: /catvehicle/current_pose
       Unreliable: false
       Value: true
+    - Alpha: 1
+      Class: rviz/Polygon
+      Color: 25; 255; 0
+      Enabled: true
+      Name: Polygon
+      Topic: /catvehicle/clear_zone
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/Polygon
+      Color: 25; 255; 0
+      Enabled: true
+      Name: Polygon
+      Topic: /catvehicle/foot_print
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/Polygon
+      Color: 255; 0; 0
+      Enabled: true
+      Name: Polygon
+      Topic: /catvehicle/safety_zone
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/Polygon
+      Color: 25; 255; 0
+      Enabled: true
+      Name: Polygon
+      Topic: /catvehicle/safety_zone_full
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -335,7 +367,7 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 31.8704
+      Scale: 12.5448
       Target Frame: catvehicle/base_link
       Value: TopDownOrtho (rviz)
       X: 0.206576

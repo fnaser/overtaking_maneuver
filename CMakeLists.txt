@@ -39,7 +39,11 @@ include_directories(
 )
 
 add_executable(overtaking_maneuver_node src/overtaking_maneuver_node.cpp src/overtaking_maneuver.cpp)
-
 add_dependencies(overtaking_maneuver_node overtaking_maneuver_node_generate_messages_cpp ${PROJECT_NAME}_gencfg ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(overtaking_maneuver_node ${catkin_LIBRARIES})
+
+add_executable(overtaking_state_machine src/overtaking_state_machine.cpp)
+target_link_libraries(overtaking_state_machine ${catkin_LIBRARIES})
+
+add_executable(button_simulator src/button_simulator.cpp)
+target_link_libraries(button_simulator ${catkin_LIBRARIES})

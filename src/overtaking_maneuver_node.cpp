@@ -29,6 +29,11 @@ int main(int argc, char **argv) {
       sub_odom_topic, pub_path_topic, pub_path_topic_test,
       pub_current_pose_topic, robot_name, path_frame_id, path_pose_frame_id);
 
+  // http://wiki.ros.org/roscpp_tutorials/Tutorials/UsingClassMethodsAsCallbacks
+  ros::ServiceServer ss =
+      n.advertiseService("publish_overtaking_trajectory",
+                         &OvertakingManeuver::publish_trajectory, om);
+
   ros::Rate loop_rate(10);
 
   // http://wiki.ros.org/ROSNodeTutorialC%2B%2B
@@ -38,11 +43,6 @@ int main(int argc, char **argv) {
       overtaking_maneuver::OvertakingManeuverInputsConfig>::CallbackType f;
   f = boost::bind(&OvertakingManeuver::dynamic_config_callback, om, _1, _2);
   server.setCallback(f);
-
-  // http://wiki.ros.org/roscpp_tutorials/Tutorials/UsingClassMethodsAsCallbacks
-  ros::ServiceServer ss =
-      n.advertiseService("publish_overtaking_trajectory",
-                         &OvertakingManeuver::publish_trajectory, om);
 
   while (ros::ok()) {
 
