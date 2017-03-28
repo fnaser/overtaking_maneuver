@@ -1,7 +1,6 @@
 #include "overtaking_maneuver/overtaking_maneuver.h"
 
 std::string node_name = "overtaking_maneuver_node";
-std::string sub_user_input_topic = "update_odom_user_input";
 std::string sub_odom_topic = "odom";
 std::string pub_path_topic = "overtaking_path";
 std::string pub_path_topic_test = "overtaking_path_test";
@@ -18,16 +17,15 @@ int main(int argc, char **argv) {
   bool update_odom, use_dynamic_reconfig;
 
   ros::NodeHandle private_node_handle_("~");
-  private_node_handle_.param("update_odom", update_odom, bool(true));
   private_node_handle_.param("use_dynamic_reconfig", use_dynamic_reconfig,
                              bool(true));
 
   tf::TransformListener tflistener;
 
   OvertakingManeuver *om = new OvertakingManeuver(
-      &n, &tflistener, update_odom, use_dynamic_reconfig, sub_user_input_topic,
-      sub_odom_topic, pub_path_topic, pub_path_topic_test,
-      pub_current_pose_topic, robot_name, path_frame_id, path_pose_frame_id);
+      &n, &tflistener, use_dynamic_reconfig, sub_odom_topic, pub_path_topic,
+      pub_path_topic_test, pub_current_pose_topic, robot_name, path_frame_id,
+      path_pose_frame_id);
 
   // http://wiki.ros.org/roscpp_tutorials/Tutorials/UsingClassMethodsAsCallbacks
   ros::ServiceServer ss =

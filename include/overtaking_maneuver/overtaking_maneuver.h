@@ -27,7 +27,7 @@ private:
   // Current pose of ego vehicle
   geometry_msgs::PoseStamped current_pose;
   // Params
-  bool update_odom, use_dynamic_reconfig;
+  bool use_dynamic_reconfig;
 
   // INPUTS
   // V (>= 5 m/s): Initial and final velocity [m/s]
@@ -66,8 +66,7 @@ public:
   ~OvertakingManeuver();
   OvertakingManeuver();
   OvertakingManeuver(ros::NodeHandle *n, tf::TransformListener *tflistener,
-                     bool update_odom, bool use_dynamic_reconfig,
-                     string sub_user_input_topic, string sub_odom_topic,
+                     bool use_dynamic_reconfig, string sub_odom_topic,
                      string pub_path_topic, string pub_path_topic_test,
                      string pub_current_pose_topic, string robot_name,
                      string path_frame_id, string path_pose_frame_id);
@@ -80,8 +79,6 @@ public:
       uint32_t level);
 
   bool get_use_dynamic_reconfig();
-  bool get_update_odom();
-  void set_update_odom(bool);
 };
 
 #endif // OVERTAKING_MANEUVER_H

@@ -5,18 +5,16 @@ OvertakingManeuver::~OvertakingManeuver() {}
 OvertakingManeuver::OvertakingManeuver() {}
 
 OvertakingManeuver::OvertakingManeuver(
-    ros::NodeHandle *n, tf::TransformListener *tflistener, bool update_odom,
-    bool use_dynamic_reconfig, string sub_user_input_topic,
-    string sub_odom_topic, string pub_path_topic, string pub_path_topic_test,
-    string pub_current_pose_topic, string robot_name, string path_frame_id,
-    string path_pose_frame_id)
-    : n(n), tflistener(tflistener), update_odom(update_odom),
-      use_dynamic_reconfig(use_dynamic_reconfig),
-      sub_user_input_topic(sub_user_input_topic),
+    ros::NodeHandle *n, tf::TransformListener *tflistener,
+    bool use_dynamic_reconfig, string sub_odom_topic, string pub_path_topic,
+    string pub_path_topic_test, string pub_current_pose_topic,
+    string robot_name, string path_frame_id, string path_pose_frame_id)
+    : n(n), tflistener(tflistener), use_dynamic_reconfig(use_dynamic_reconfig),
       sub_odom_topic(sub_odom_topic), pub_path_topic(pub_path_topic),
       pub_path_topic_test(pub_path_topic_test),
       pub_current_pose_topic(pub_current_pose_topic), robot_name(robot_name),
       path_frame_id(path_frame_id), path_pose_frame_id(path_pose_frame_id) {
+
   input_vel = 15;
   input_width = 3.00;
   input_max_acc = 3.00; // = normal car in the US
@@ -29,15 +27,6 @@ OvertakingManeuver::OvertakingManeuver(
   pub_trajectory_test = n->advertise<nav_msgs::Path>(pub_path_topic_test, 1000);
   sub_odom = n->subscribe<nav_msgs::Odometry>(
       sub_odom_topic, 1000, &OvertakingManeuver::odom_callback, this);
-  sub_user_input = n->subscribe<std_msgs::Bool>(
-      sub_user_input_topic, 1000, &OvertakingManeuver::user_input_callback,
-      this);
-}
-
-bool OvertakingManeuver::get_update_odom() { return update_odom; }
-
-void OvertakingManeuver::set_update_odom(bool new_update_odom) {
-  update_odom = new_update_odom;
 }
 
 bool OvertakingManeuver::get_use_dynamic_reconfig() {
@@ -74,26 +63,19 @@ double OvertakingManeuver::calculate_y_at_t(double input_width,
                         6 * pow((time_t / total_time), 5));
 }
 
-void OvertakingManeuver::user_input_callback(
-    const std_msgs::Bool::ConstPtr &msg) {
-  update_odom = msg->data;
-}
-
 void OvertakingManeuver::odom_callback(
     const nav_msgs::Odometry::ConstPtr &odom) {
-  if (update_odom) {
-    current_pose.header.frame_id = odom->header.frame_id;
-    current_pose.header.stamp = odom->header.stamp;
+  current_pose.header.frame_id = odom->header.frame_id;
+  current_pose.header.stamp = odom->header.stamp;
 
-    current_pose.pose.position.x = odom->pose.pose.position.x;
-    current_pose.pose.position.y = odom->pose.pose.position.y;
-    current_pose.pose.position.z = odom->pose.pose.position.z;
+  current_pose.pose.position.x = odom->pose.pose.position.x;
+  current_pose.pose.position.y = odom->pose.pose.position.y;
+  current_pose.pose.position.z = odom->pose.pose.position.z;
 
-    current_pose.pose.orientation.x = odom->pose.pose.orientation.x;
-    current_pose.pose.orientation.y = odom->pose.pose.orientation.y;
-    current_pose.pose.orientation.z = odom->pose.pose.orientation.z;
-    current_pose.pose.orientation.w = odom->pose.pose.orientation.w;
-  }
+  current_pose.pose.orientation.x = odom->pose.pose.orientation.x;
+  current_pose.pose.orientation.y = odom->pose.pose.orientation.y;
+  current_pose.pose.orientation.z = odom->pose.pose.orientation.z;
+  current_pose.pose.orientation.w = odom->pose.pose.orientation.w;
 }
 
 void OvertakingManeuver::rotate_path(nav_msgs::Path *path,
