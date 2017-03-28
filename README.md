@@ -12,14 +12,12 @@ Based on:
 ```
 roscore
 rqt
-rosrun rviz rviz
-roslaunch catvehicle catvehicle_skidpan.launch
-gzclient
+roslaunch catvehicle 2_lidars_2_cars.launch
 ```
 
 # ~/.bashrc
 
 ```
 source /opt/ros/kinetic/setup.bash
-source ~/catkinect_ws/devel/setup.bash
+source ~/catkinetic_ws/devel/setup.bash
 ```
