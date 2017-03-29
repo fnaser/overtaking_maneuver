@@ -17,6 +17,7 @@ sudo apt-get install chromium-browser
  - http://cps-vo.org/node/26602
  - http://cps-vo.org/node/26591
 ```
+~/catvehicle_ws/src/$ git clone https://github.com/fnaser/catvehicle.git
 ~/catvehicle_ws/src/$ git clone https://github.com/fnaser/overtaking_maneuver.git
 ```
  - ~/.bashrc
