@@ -1,11 +1,29 @@
 # overtaking_maneuver
+
 ROS Node to calculate the optimal trajectory for an autonomous vehicle to overtake a slower moving vehicle.
 
 Based on:
 - T. Shamir, "How should an autonomous vehicle overtake a slower moving vehicle: design and analysis of an optimal trajectory," in IEEE Transactions on Automatic Control, vol. 49, no. 4, pp. 607-610, April 2004. doi: 10.1109/TAC.2004.825632
 - http://cps-vo.org/group/CATVehicleTestbed
-- Ubuntu 16.04
-- ROS Kinetic
+
+# Installation
+
+ - http://releases.ubuntu.com/14.04/
+ - http://wiki.ros.org/indigo/Installation/Ubuntu
+```
+sudo apt-get install git
+sudo apt-get install chromium-browser
+```
+ - http://cps-vo.org/node/26602
+ - http://cps-vo.org/node/26591
+```
+~/catvehicle_ws/src/$ git clone https://github.com/fnaser/overtaking_maneuver.git
+```
+ - ~/.bashrc
+```
+source /opt/ros/indigo/setup.bash
+source ~/catvehicle_ws/devel/setup.bash
+```
 
 # How to run the simulaton
 
@@ -13,11 +31,5 @@ Based on:
 roscore
 rqt
 roslaunch catvehicle 2_lidars_2_cars.launch
-```
-
-# ~/.bashrc
-
-```
-source /opt/ros/kinetic/setup.bash
-source ~/catkinetic_ws/devel/setup.bash
+roslaunch overtaking_maneuver overtaking_maneuver.launch
 ```
