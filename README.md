@@ -25,6 +25,8 @@ sudo apt-get install chromium-browser
 source /opt/ros/indigo/setup.bash
 source ~/catvehicle_ws/devel/setup.bash
 ```
+ - download Gazebo files https://bitbucket.org/osrf/gazebo_models/downloads/
+ - mv to ~/.gazebo/models
 
 # How to run the simulaton
 
