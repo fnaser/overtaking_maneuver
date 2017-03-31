@@ -24,6 +24,7 @@ source ~/catvehicle_ws/devel/setup.bash
  - http://wiki.ros.org/indigo/Installation/Ubuntu
  - http://cps-vo.org/node/26602
  - http://cps-vo.org/node/26591
+ - http://gazebosim.org/tutorials?tut=install_ubuntu
  - download Gazebo files https://bitbucket.org/osrf/gazebo_models/downloads/
  - mv to ~/.gazebo/models
 
