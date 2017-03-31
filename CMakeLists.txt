@@ -43,6 +43,7 @@ add_dependencies(overtaking_maneuver_node overtaking_maneuver_node_generate_mess
 target_link_libraries(overtaking_maneuver_node ${catkin_LIBRARIES})
 
 add_executable(overtaking_state_machine src/overtaking_state_machine.cpp)
+add_dependencies(overtaking_state_machine overtaking_maneuver_node_generate_messages_cpp ${PROJECT_NAME}_gencfg ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(overtaking_state_machine ${catkin_LIBRARIES})
 
 add_executable(button_simulator src/button_simulator.cpp)
