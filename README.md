@@ -14,11 +14,12 @@ Based on:
 sudo apt-get install git
 sudo apt-get install chromium-browser
 ```
- - http://cps-vo.org/node/26602 (https://github.com/fnaser/overtaking_maneuver/blob/master/pdfs/Installation%20_%20CPS-VO.pdf)
- - http://cps-vo.org/node/26591 (https://github.com/fnaser/overtaking_maneuver/blob/master/pdfs/Compile%20the%20release%20_%20CPS-VO.pdf)
+ - http://cps-vo.org/node/26602
+ - http://cps-vo.org/node/26591
 ```
 ~/catvehicle_ws/src/$ git clone https://github.com/fnaser/catvehicle.git
 ~/catvehicle_ws/src/$ git clone https://github.com/fnaser/overtaking_maneuver.git
+~/catvehicle_ws/src/$ git clone https://github.com/fnaser/obstaclestopper.git
 ```
  - ~/.bashrc
 ```
@@ -32,6 +33,12 @@ source ~/catvehicle_ws/devel/setup.bash
 
  - http://releases.ubuntu.com/16.04/
  - http://wiki.ros.org/kinetic/Installation/Ubuntu
+
+```
+sudo apt-get install ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control libpcap0.8cd -dev
+```
+ - https://github.com/ros-simulation/gazebo_ros_pkgs
+ - http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros
 
 # How to run the simulaton
 
