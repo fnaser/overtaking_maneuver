@@ -22,6 +22,7 @@ ros::Publisher pub_original_trajectory, pub_custom_trajectory,
 bool published_new_path = false;
 
 double input_vel, input_width, input_max_acc;
+double offset = 1;
 
 void latest_way_point_callback(const std_msgs::Float64::ConstPtr &percentage) {
   if (percentage->data > 0.9) {
@@ -29,6 +30,25 @@ void latest_way_point_callback(const std_msgs::Float64::ConstPtr &percentage) {
     published_new_path = false;
     ROS_INFO("overtaking maneuver over");
   }
+}
+
+bool on_straight_line(nav_msgs::Path path_map_frame,
+                      nav_msgs::Path latest_path) {
+  double x_latest =
+      path_map_frame.poses[path_map_frame.poses.size() - 1].pose.position.x;
+  double y_latest =
+      path_map_frame.poses[path_map_frame.poses.size() - 1].pose.position.y;
+  for (int i = 0; i < latest_path.poses.size(); i++) {
+    if (x_latest + offset > latest_path.poses[i].pose.position.x &&
+        x_latest - offset < latest_path.poses[i].pose.position.x &&
+        y_latest + offset > latest_path.poses[i].pose.position.y &&
+        y_latest - offset < latest_path.poses[i].pose.position.y) {
+      ROS_INFO("found point wihin boundaries");
+      return true;
+    }
+  }
+  ROS_INFO("no point wihin boundaries");
+  return false;
 }
 
 void obstacle_callback(const nav_msgs::Path::ConstPtr &path) {
@@ -43,10 +63,13 @@ void obstacle_callback(const nav_msgs::Path::ConstPtr &path) {
     ROS_INFO("call service");
     if (client.call(srv)) {
 
-      pub_custom_trajectory.publish(srv.response.path_custom_frame);
-      pub_overtaking_trajectory.publish(srv.response.path_map_frame);
-
-      published_new_path = true;
+      if (on_straight_line(srv.response.path_map_frame, latest_path)) {
+        pub_custom_trajectory.publish(srv.response.path_custom_frame);
+        pub_overtaking_trajectory.publish(srv.response.path_map_frame);
+        published_new_path = true;
+      } else {
+        ROS_INFO("not on straight line");
+      }
     } else {
       ROS_ERROR("failed to call service");
       // return 1;
