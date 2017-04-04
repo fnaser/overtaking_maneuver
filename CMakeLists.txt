@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  nav_msgs
   dynamic_reconfigure
   tf
   tf2
@@ -22,6 +23,7 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  nav_msgs
 )
 
 generate_dynamic_reconfigure_options(

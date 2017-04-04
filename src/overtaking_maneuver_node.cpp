@@ -2,8 +2,6 @@
 
 std::string node_name = "overtaking_maneuver_node";
 std::string sub_odom_topic = "odom";
-std::string pub_path_topic = "overtaking_path";
-std::string pub_path_topic_test = "overtaking_path_test";
 std::string pub_current_pose_topic = "current_pose";
 std::string robot_name = "catvehicle";
 std::string path_frame_id = "map";
@@ -23,9 +21,8 @@ int main(int argc, char **argv) {
   tf::TransformListener tflistener;
 
   OvertakingManeuver *om = new OvertakingManeuver(
-      &n, &tflistener, use_dynamic_reconfig, sub_odom_topic, pub_path_topic,
-      pub_path_topic_test, pub_current_pose_topic, robot_name, path_frame_id,
-      path_pose_frame_id);
+      &n, &tflistener, use_dynamic_reconfig, sub_odom_topic,
+      pub_current_pose_topic, robot_name, path_frame_id, path_pose_frame_id);
 
   // http://wiki.ros.org/roscpp_tutorials/Tutorials/UsingClassMethodsAsCallbacks
   ros::ServiceServer ss =

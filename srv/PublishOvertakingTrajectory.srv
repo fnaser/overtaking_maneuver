@@ -2,4 +2,6 @@ float64 input_vel
 float64 input_width
 float64 input_max_acc
 ---
+nav_msgs/Path path_map_frame
+nav_msgs/Path path_custom_frame
 bool finished

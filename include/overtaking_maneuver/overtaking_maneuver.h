@@ -39,8 +39,6 @@ private:
 
   string sub_user_input_topic;
   string sub_odom_topic;
-  string pub_path_topic;
-  string pub_path_topic_test;
   string pub_current_pose_topic;
   string robot_name;
   string path_frame_id;
@@ -67,7 +65,6 @@ public:
   OvertakingManeuver();
   OvertakingManeuver(ros::NodeHandle *n, tf::TransformListener *tflistener,
                      bool use_dynamic_reconfig, string sub_odom_topic,
-                     string pub_path_topic, string pub_path_topic_test,
                      string pub_current_pose_topic, string robot_name,
                      string path_frame_id, string path_pose_frame_id);
 

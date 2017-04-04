@@ -9,19 +9,23 @@
 std::string node_name = "overtaking_state_machine";
 std::string sub_obstacle_topic = "store_path_before_overtaking";
 std::string sub_way_point = "way_point_percentage";
-std::string pub_path_topic = "route_plan";
 std::string service_name = "publish_overtaking_trajectory";
+
+std::string pub_original_path_topic = "route_plan";
+std::string pub_path_topic_custom = "overtaking_path";
+std::string pub_path_topic_overtaking = "overtaking_path_test";
 
 nav_msgs::Path latest_path;
 ros::ServiceClient client;
-ros::Publisher pub_trajectory;
+ros::Publisher pub_original_trajectory, pub_custom_trajectory,
+    pub_overtaking_trajectory;
 bool published_new_path = false;
 
 double input_vel, input_width, input_max_acc;
 
 void latest_way_point_callback(const std_msgs::Float64::ConstPtr &percentage) {
   if (percentage->data > 0.9) {
-    pub_trajectory.publish(latest_path);
+    pub_original_trajectory.publish(latest_path);
     published_new_path = false;
     ROS_INFO("overtaking maneuver over");
   }
@@ -38,7 +42,10 @@ void obstacle_callback(const nav_msgs::Path::ConstPtr &path) {
 
     ROS_INFO("call service");
     if (client.call(srv)) {
-      ROS_INFO("finished: %d", srv.response.finished);
+
+      pub_custom_trajectory.publish(srv.response.path_custom_frame);
+      pub_overtaking_trajectory.publish(srv.response.path_map_frame);
+
       published_new_path = true;
     } else {
       ROS_ERROR("failed to call service");
@@ -60,7 +67,12 @@ int main(int argc, char **argv) {
       sub_way_point, 1000, &latest_way_point_callback);
   ros::Subscriber sub_obstacle =
       n.subscribe<nav_msgs::Path>(sub_obstacle_topic, 1000, &obstacle_callback);
-  pub_trajectory = n.advertise<nav_msgs::Path>(pub_path_topic, 1000);
+  pub_original_trajectory =
+      n.advertise<nav_msgs::Path>(pub_original_path_topic, 1000);
+  pub_custom_trajectory =
+      n.advertise<nav_msgs::Path>(pub_path_topic_custom, 1000);
+  pub_overtaking_trajectory =
+      n.advertise<nav_msgs::Path>(pub_path_topic_overtaking, 1000);
 
   client = n.serviceClient<overtaking_maneuver::PublishOvertakingTrajectory>(
       service_name);

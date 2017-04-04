@@ -4,9 +4,7 @@
   <group ns="$(arg veh)">
 
     <node name="overtaking_maneuver_node" pkg="overtaking_maneuver" type="overtaking_maneuver_node" respawn="false" output="screen">
-      <!--remap from="overtaking_path" to="control_path"/-->
       <param name="use_dynamic_reconfig" value="false"/>
-      <remap from="overtaking_path" to="route_plan"/>
     </node>
 
     <node name="button_simulator_node" pkg="overtaking_maneuver" type="button_simulator" respawn="false" output="screen">
@@ -16,6 +14,7 @@
       <param name="input_vel" value="7"/>
       <param name="input_width" value="7"/>
       <param name="input_max_acc" value="7"/>
+      <remap from="overtaking_path" to="route_plan"/>
     </node>
 
   </group>

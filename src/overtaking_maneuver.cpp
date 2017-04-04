@@ -4,14 +4,16 @@ OvertakingManeuver::~OvertakingManeuver() {}
 
 OvertakingManeuver::OvertakingManeuver() {}
 
-OvertakingManeuver::OvertakingManeuver(
-    ros::NodeHandle *n, tf::TransformListener *tflistener,
-    bool use_dynamic_reconfig, string sub_odom_topic, string pub_path_topic,
-    string pub_path_topic_test, string pub_current_pose_topic,
-    string robot_name, string path_frame_id, string path_pose_frame_id)
+OvertakingManeuver::OvertakingManeuver(ros::NodeHandle *n,
+                                       tf::TransformListener *tflistener,
+                                       bool use_dynamic_reconfig,
+                                       string sub_odom_topic,
+                                       string pub_current_pose_topic,
+                                       string robot_name, string path_frame_id,
+                                       string path_pose_frame_id)
     : n(n), tflistener(tflistener), use_dynamic_reconfig(use_dynamic_reconfig),
-      sub_odom_topic(sub_odom_topic), pub_path_topic(pub_path_topic),
-      pub_path_topic_test(pub_path_topic_test),
+      sub_odom_topic(sub_odom_topic),
+
       pub_current_pose_topic(pub_current_pose_topic), robot_name(robot_name),
       path_frame_id(path_frame_id), path_pose_frame_id(path_pose_frame_id) {
 
@@ -21,10 +23,8 @@ OvertakingManeuver::OvertakingManeuver(
 
   time_step_size = 0.5;
 
-  pub_trajectory = n->advertise<nav_msgs::Path>(pub_path_topic, 1000);
   pub_current_pose =
       n->advertise<geometry_msgs::PoseStamped>(pub_current_pose_topic, 1000);
-  pub_trajectory_test = n->advertise<nav_msgs::Path>(pub_path_topic_test, 1000);
   sub_odom = n->subscribe<nav_msgs::Odometry>(
       sub_odom_topic, 1000, &OvertakingManeuver::odom_callback, this);
 }
@@ -206,10 +206,10 @@ bool OvertakingManeuver::publish_trajectory(
 
   rotate_path(&path_tmp, tflistener);
 
-  pub_trajectory.publish(path_tmp);
+  path_tmp.header.frame_id = path_frame_id;
+  res.path_custom_frame = path_tmp;
   path_tmp.header.frame_id = robot_name + "/map";
-  pub_trajectory_test.publish(path_tmp);
-  // ROS_INFO("path.poses.size() %d", path_tmp.poses.size());
+  res.path_map_frame = path_tmp;
   path_tmp.poses.clear();
 
   res.finished = true;
