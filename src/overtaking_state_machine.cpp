@@ -47,7 +47,7 @@ bool on_straight_line(nav_msgs::Path path_map_frame,
       return true;
     }
   }
-  ROS_INFO("no point wihin boundaries");
+  ROS_INFO("no point wihin boundaries %f", offset);
   return false;
 }
 
@@ -85,6 +85,7 @@ int main(int argc, char **argv) {
   private_node_handle_.param("input_vel", input_vel, double(7));
   private_node_handle_.param("input_width", input_width, double(5));
   private_node_handle_.param("input_max_acc", input_max_acc, double(3));
+  private_node_handle_.param("offset", offset, double(1));
 
   ros::Subscriber sub_percentage = n.subscribe<std_msgs::Float64>(
       sub_way_point, 1000, &latest_way_point_callback);
