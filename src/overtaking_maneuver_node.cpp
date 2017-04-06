@@ -17,6 +17,8 @@ int main(int argc, char **argv) {
   ros::NodeHandle private_node_handle_("~");
   private_node_handle_.param("use_dynamic_reconfig", use_dynamic_reconfig,
                              bool(true));
+  private_node_handle_.param("robot_name", robot_name,
+                             std::string("catvehicle"));
 
   tf::TransformListener tflistener;
 

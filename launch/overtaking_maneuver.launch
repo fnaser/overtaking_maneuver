@@ -1,10 +1,11 @@
 <launch>
-  <arg name="veh" default="catvehicle"/>
+  <arg name="veh"/>
 
   <group ns="$(arg veh)">
 
     <node name="overtaking_maneuver_node" pkg="overtaking_maneuver" type="overtaking_maneuver_node" respawn="false" output="screen">
       <param name="use_dynamic_reconfig" value="false"/>
+      <param name="robot_name" value="$(arg veh)"/>
     </node>
 
     <node name="button_simulator_node" pkg="overtaking_maneuver" type="button_simulator" respawn="false" output="screen">
