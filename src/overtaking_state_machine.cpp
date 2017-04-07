@@ -23,9 +23,10 @@ bool published_new_path = false;
 
 double input_vel, input_width, input_max_acc;
 double offset = 1;
+double percentage_param;
 
 void latest_way_point_callback(const std_msgs::Float64::ConstPtr &percentage) {
-  if (percentage->data > 0.9) {
+  if (percentage->data > percentage_param) {
     pub_original_trajectory.publish(latest_path);
     published_new_path = false;
     ROS_INFO("overtaking maneuver over");
@@ -86,6 +87,7 @@ int main(int argc, char **argv) {
   private_node_handle_.param("input_width", input_width, double(5));
   private_node_handle_.param("input_max_acc", input_max_acc, double(3));
   private_node_handle_.param("offset", offset, double(1));
+  private_node_handle_.param("percentage", percentage_param, double(0.8));
 
   ros::Subscriber sub_percentage = n.subscribe<std_msgs::Float64>(
       sub_way_point, 1000, &latest_way_point_callback);
