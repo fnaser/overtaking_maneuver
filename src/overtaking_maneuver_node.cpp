@@ -13,18 +13,21 @@ int main(int argc, char **argv) {
   ros::NodeHandle n;
 
   bool update_odom, use_dynamic_reconfig;
+  double traffic_direction;
 
   ros::NodeHandle private_node_handle_("~");
   private_node_handle_.param("use_dynamic_reconfig", use_dynamic_reconfig,
                              bool(true));
   private_node_handle_.param("robot_name", robot_name,
                              std::string("catvehicle"));
+  private_node_handle_.param("traffic_direction", traffic_direction, double(1));
 
   tf::TransformListener tflistener;
 
   OvertakingManeuver *om = new OvertakingManeuver(
       &n, &tflistener, use_dynamic_reconfig, sub_odom_topic,
-      pub_current_pose_topic, robot_name, path_frame_id, path_pose_frame_id);
+      pub_current_pose_topic, robot_name, path_frame_id, path_pose_frame_id,
+      traffic_direction);
 
   // http://wiki.ros.org/roscpp_tutorials/Tutorials/UsingClassMethodsAsCallbacks
   ros::ServiceServer ss =

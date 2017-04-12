@@ -48,33 +48,39 @@ bool on_straight_line(nav_msgs::Path path_map_frame,
       return true;
     }
   }
-  ROS_INFO("no point wihin boundaries %f", offset);
+  ROS_INFO("no point within boundaries %f", offset);
   return false;
+}
+
+void publish_path() {
+  overtaking_maneuver::PublishOvertakingTrajectory srv;
+  srv.request.input_vel = input_vel;
+  srv.request.input_width = input_width;
+  srv.request.input_max_acc = input_max_acc;
+
+  ROS_INFO("call service");
+  if (client.call(srv)) {
+
+    // debugging
+    pub_overtaking_trajectory.publish(srv.response.path_map_frame);
+
+    if (on_straight_line(srv.response.path_map_frame, latest_path)) {
+      pub_custom_trajectory.publish(srv.response.path_custom_frame);
+      published_new_path = true;
+    } else {
+      ROS_INFO("not on straight line");
+    }
+  } else {
+    ROS_ERROR("failed to call service");
+    // return 1;
+  }
 }
 
 void obstacle_callback(const nav_msgs::Path::ConstPtr &path) {
   if (!published_new_path) {
     latest_path = *path;
     ROS_INFO("obstacle in the way detected");
-    overtaking_maneuver::PublishOvertakingTrajectory srv;
-    srv.request.input_vel = input_vel;
-    srv.request.input_width = input_width;
-    srv.request.input_max_acc = input_max_acc;
-
-    ROS_INFO("call service");
-    if (client.call(srv)) {
-
-      if (on_straight_line(srv.response.path_map_frame, latest_path)) {
-        pub_custom_trajectory.publish(srv.response.path_custom_frame);
-        pub_overtaking_trajectory.publish(srv.response.path_map_frame);
-        published_new_path = true;
-      } else {
-        ROS_INFO("not on straight line");
-      }
-    } else {
-      ROS_ERROR("failed to call service");
-      // return 1;
-    }
+    publish_path();
   }
 }
 

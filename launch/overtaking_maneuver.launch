@@ -7,6 +7,7 @@
     <node name="overtaking_maneuver_node" pkg="overtaking_maneuver" type="overtaking_maneuver_node" respawn="false" output="screen">
       <param name="use_dynamic_reconfig" value="false"/>
       <param name="robot_name" value="$(arg veh)"/>
+      <param name="traffic_direction" value="-1"/>
     </node>
 
     <node name="button_simulator_node" pkg="overtaking_maneuver" type="button_simulator" respawn="false" output="screen" if="$(arg run_button_sim)"/>
@@ -15,7 +16,7 @@
       <param name="input_vel" value="5"/>
       <param name="input_width" value="5"/>
       <param name="input_max_acc" value="3"/>
-      <param name="offset" value="1.7"/>
+      <param name="offset" value="1.7"/> <!-- 1.5 1.7 -->
       <param name="percentage" value="0.85"/>
       <remap from="overtaking_path" to="route_plan"/>
     </node>

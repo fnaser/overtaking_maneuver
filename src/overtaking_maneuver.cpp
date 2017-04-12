@@ -4,16 +4,13 @@ OvertakingManeuver::~OvertakingManeuver() {}
 
 OvertakingManeuver::OvertakingManeuver() {}
 
-OvertakingManeuver::OvertakingManeuver(ros::NodeHandle *n,
-                                       tf::TransformListener *tflistener,
-                                       bool use_dynamic_reconfig,
-                                       string sub_odom_topic,
-                                       string pub_current_pose_topic,
-                                       string robot_name, string path_frame_id,
-                                       string path_pose_frame_id)
+OvertakingManeuver::OvertakingManeuver(
+    ros::NodeHandle *n, tf::TransformListener *tflistener,
+    bool use_dynamic_reconfig, string sub_odom_topic,
+    string pub_current_pose_topic, string robot_name, string path_frame_id,
+    string path_pose_frame_id, double traffic_direction)
     : n(n), tflistener(tflistener), use_dynamic_reconfig(use_dynamic_reconfig),
-      sub_odom_topic(sub_odom_topic),
-
+      sub_odom_topic(sub_odom_topic), traffic_direction(traffic_direction),
       pub_current_pose_topic(pub_current_pose_topic), robot_name(robot_name),
       path_frame_id(path_frame_id), path_pose_frame_id(path_pose_frame_id) {
 
@@ -150,7 +147,6 @@ bool OvertakingManeuver::publish_trajectory(
   pose_tmp.pose.orientation.w = 1;
 
   double y_t_0 = calculate_y_at_t(input_width, total_time, 0);
-  double offset_x = total_dis;
 
   double time = 0;
   while (time <= total_time) {
@@ -158,22 +154,18 @@ bool OvertakingManeuver::publish_trajectory(
     double x = calculate_x_at_t(input_vel, total_dis, total_time, time);
     double y = calculate_y_at_t(input_width, total_time, time);
 
-    // Odom frame
-    pose_tmp.pose.position.x =
-        (x - total_dis) + current_pose.pose.position.x + offset_x;
+    // odom frame
+    pose_tmp.pose.position.x = (x) + current_pose.pose.position.x;
     pose_tmp.pose.position.y =
-        ((-1) * y + y_t_0) + current_pose.pose.position.y;
+        (((-1) * y + y_t_0) * traffic_direction) + current_pose.pose.position.y;
     pose_tmp.pose.position.z = (0) + current_pose.pose.position.z;
 
-    // Transform
+    // transform
     geometry_msgs::PoseStamped pose_tmp_map;
     tflistener->transformPose(robot_name + "/map", pose_tmp, pose_tmp_map);
 
-    // Map frame
-    pose_tmp = pose_tmp_map;
-
+    // push_back
     pose_tmp.header.frame_id = path_pose_frame_id;
-    // path_tmp.poses.push_back(pose_tmp);
     path_tmp.poses.push_back(pose_tmp_map);
     pose_tmp.header.frame_id = robot_name + "/odom";
 
@@ -185,27 +177,40 @@ bool OvertakingManeuver::publish_trajectory(
     double x = calculate_x_at_t(input_vel, total_dis, total_time, time);
     double y = calculate_y_at_t(input_width, total_time, time);
 
-    pose_tmp.pose.position.x = (x) + current_pose.pose.position.x + offset_x;
-    pose_tmp.pose.position.y = (y) + current_pose.pose.position.y;
+    // odom frame
+    pose_tmp.pose.position.x = (x) + current_pose.pose.position.x + total_dis;
+    pose_tmp.pose.position.y =
+        ((y)*traffic_direction) + current_pose.pose.position.y;
     pose_tmp.pose.position.z = (0) + current_pose.pose.position.z;
 
-    // Transform
+    // transform
     geometry_msgs::PoseStamped pose_tmp_map;
     tflistener->transformPose(robot_name + "/map", pose_tmp, pose_tmp_map);
 
-    // Map frame
-    pose_tmp = pose_tmp_map;
-
+    // push_back
     pose_tmp.header.frame_id = path_pose_frame_id;
-    // path_tmp.poses.push_back(pose_tmp);
     path_tmp.poses.push_back(pose_tmp_map);
     pose_tmp.header.frame_id = robot_name + "/odom";
 
     time = time + time_step_size;
   }
 
+  // add last point
+  pose_tmp.pose.position.x += total_dis / 2;
+
+  // Transform
+  geometry_msgs::PoseStamped pose_tmp_map;
+  tflistener->transformPose(robot_name + "/map", pose_tmp, pose_tmp_map);
+
+  // push_back
+  pose_tmp.header.frame_id = path_pose_frame_id;
+  path_tmp.poses.push_back(pose_tmp_map);
+  pose_tmp.header.frame_id = robot_name + "/odom";
+
+  // rotate
   rotate_path(&path_tmp, tflistener);
 
+  // finish
   path_tmp.header.frame_id = path_frame_id;
   res.path_custom_frame = path_tmp;
   path_tmp.header.frame_id = robot_name + "/map";
