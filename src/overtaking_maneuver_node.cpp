@@ -7,12 +7,23 @@ std::string robot_name = "catvehicle";
 std::string path_frame_id = "map";
 std::string path_pose_frame_id = "";
 
+void test_tf(tf::TransformListener *tflistener) {
+  tf::StampedTransform transform;
+  try {
+    tflistener->lookupTransform(robot_name + "/map", robot_name + "/odom",
+                               ros::Time(0), transform);
+  } catch (tf::TransformException ex) {
+    ROS_ERROR("%s", ex.what());
+    ros::Duration(1.0).sleep();
+  }
+}
+
 int main(int argc, char **argv) {
   ros::init(argc, argv, node_name);
 
   ros::NodeHandle n;
 
-  bool update_odom, use_dynamic_reconfig;
+  bool use_dynamic_reconfig;
   double traffic_direction;
 
   ros::NodeHandle private_node_handle_("~");
@@ -23,6 +34,7 @@ int main(int argc, char **argv) {
   private_node_handle_.param("traffic_direction", traffic_direction, double(1));
 
   tf::TransformListener tflistener;
+  test_tf(&tflistener);
 
   OvertakingManeuver *om = new OvertakingManeuver(
       &n, &tflistener, use_dynamic_reconfig, sub_odom_topic,
@@ -45,16 +57,7 @@ int main(int argc, char **argv) {
   server.setCallback(f);
 
   while (ros::ok()) {
-
-    tf::StampedTransform transform;
-    try {
-      tflistener.lookupTransform(robot_name + "/map", robot_name + "/odom",
-                                 ros::Time(0), transform);
-    } catch (tf::TransformException ex) {
-      ROS_ERROR("%s", ex.what());
-      ros::Duration(1.0).sleep();
-    }
-
+    test_tf(&tflistener);
     ros::spinOnce();
     loop_rate.sleep();
   }

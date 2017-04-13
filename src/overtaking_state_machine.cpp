@@ -52,6 +52,25 @@ bool on_straight_line(nav_msgs::Path path_map_frame,
   return false;
 }
 
+void debug_path() {
+  overtaking_maneuver::PublishOvertakingTrajectory srv;
+  srv.request.input_vel = input_vel;
+  srv.request.input_width = input_width;
+  srv.request.input_max_acc = input_max_acc;
+
+  ROS_INFO("call service in debug mode");
+  if (client.call(srv)) {
+
+    // debugging
+    pub_overtaking_trajectory.publish(srv.response.path_map_frame);
+    published_new_path = true;
+
+  } else {
+    ROS_ERROR("failed to call service in debug mode");
+    // return 1;
+  }
+}
+
 void publish_path() {
   overtaking_maneuver::PublishOvertakingTrajectory srv;
   srv.request.input_vel = input_vel;
@@ -108,6 +127,10 @@ int main(int argc, char **argv) {
 
   client = n.serviceClient<overtaking_maneuver::PublishOvertakingTrajectory>(
       service_name);
+
+  // debugging
+  sleep(2);
+  debug_path();
 
   ros::spin();
 

@@ -17,7 +17,7 @@
       <param name="input_width" value="5"/>
       <param name="input_max_acc" value="3"/>
       <param name="offset" value="1.7"/> <!-- 1.5 1.7 -->
-      <param name="percentage" value="0.85"/>
+      <param name="percentage" value="0.9"/>
       <remap from="overtaking_path" to="route_plan"/>
     </node>
 

@@ -18,7 +18,7 @@ OvertakingManeuver::OvertakingManeuver(
   input_width = 3.00;
   input_max_acc = 3.00; // = normal car in the US
 
-  time_step_size = 0.5;
+  step_size = 0.5;
 
   pub_current_pose =
       n->advertise<geometry_msgs::PoseStamped>(pub_current_pose_topic, 1000);
@@ -169,7 +169,7 @@ bool OvertakingManeuver::publish_trajectory(
     path_tmp.poses.push_back(pose_tmp_map);
     pose_tmp.header.frame_id = robot_name + "/odom";
 
-    time = time + time_step_size;
+    time = time + step_size;
   }
 
   time = 0;
@@ -192,20 +192,25 @@ bool OvertakingManeuver::publish_trajectory(
     path_tmp.poses.push_back(pose_tmp_map);
     pose_tmp.header.frame_id = robot_name + "/odom";
 
-    time = time + time_step_size;
+    time = time + step_size;
   }
 
-  // add last point
-  pose_tmp.pose.position.x += total_dis / 2;
+  double distance = step_size;
+  while (distance <= total_dis / 5) {
 
-  // Transform
-  geometry_msgs::PoseStamped pose_tmp_map;
-  tflistener->transformPose(robot_name + "/map", pose_tmp, pose_tmp_map);
+    pose_tmp.pose.position.x += distance;
 
-  // push_back
-  pose_tmp.header.frame_id = path_pose_frame_id;
-  path_tmp.poses.push_back(pose_tmp_map);
-  pose_tmp.header.frame_id = robot_name + "/odom";
+    // transform
+    geometry_msgs::PoseStamped pose_tmp_map;
+    tflistener->transformPose(robot_name + "/map", pose_tmp, pose_tmp_map);
+
+    // push_back
+    pose_tmp.header.frame_id = path_pose_frame_id;
+    path_tmp.poses.push_back(pose_tmp_map);
+    pose_tmp.header.frame_id = robot_name + "/odom";
+
+    distance = distance + step_size;
+  }
 
   // rotate
   rotate_path(&path_tmp, tflistener);

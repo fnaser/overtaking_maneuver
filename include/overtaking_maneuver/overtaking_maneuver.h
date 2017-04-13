@@ -22,8 +22,8 @@ using namespace std;
 class OvertakingManeuver {
 
 private:
-  // Time step size
-  double time_step_size;
+  // Time and distance step size
+  double step_size;
   // Traffic direction
   double traffic_direction;
   // Current pose of ego vehicle
@@ -57,7 +57,6 @@ private:
   double calculate_x_at_t(double input_vel, double dis, double total_time,
                           double time_t);
   double calculate_y_at_t(double input_width, double total_time, double time_t);
-  void user_input_callback(const std_msgs::Bool::ConstPtr &msg);
   void odom_callback(const nav_msgs::Odometry::ConstPtr &odom);
   void rotate_path(nav_msgs::Path *path, tf::TransformListener *tflistener);
 
