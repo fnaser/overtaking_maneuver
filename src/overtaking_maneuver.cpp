@@ -75,8 +75,25 @@ void OvertakingManeuver::odom_callback(
   current_pose.pose.orientation.w = odom->pose.pose.orientation.w;
 }
 
-void OvertakingManeuver::rotate_path(nav_msgs::Path *path,
-                                     tf::TransformListener *tflistener) {
+geometry_msgs::PoseStamped
+OvertakingManeuver::transform(geometry_msgs::PoseStamped pose_tmp) {
+  geometry_msgs::PoseStamped pose_tmp_map;
+  try {
+    ros::Time now = ros::Time::now();
+    tflistener->waitForTransform(robot_name + "/map", robot_name + "/odom", now,
+                                 ros::Duration(3.0));
+
+    // transform
+    tflistener->transformPose(robot_name + "/map", pose_tmp, pose_tmp_map);
+
+  } catch (tf::TransformException ex) {
+    ROS_ERROR("%s", ex.what());
+  }
+
+  return pose_tmp_map;
+}
+
+void OvertakingManeuver::rotate_path(nav_msgs::Path *path) {
   geometry_msgs::PoseStamped pose_tmp_map;
   geometry_msgs::PoseStamped pose_tmp_odom;
   pose_tmp_odom.header.frame_id = robot_name + "/odom";
@@ -86,7 +103,7 @@ void OvertakingManeuver::rotate_path(nav_msgs::Path *path,
   pose_tmp_odom.pose.orientation.y = 0;
   pose_tmp_odom.pose.orientation.z = 0;
   pose_tmp_odom.pose.orientation.w = 1;
-  tflistener->transformPose(robot_name + "/map", pose_tmp_odom, pose_tmp_map);
+  pose_tmp_map = transform(pose_tmp_odom);
 
   tf::Pose pose;
   tf::poseMsgToTF(current_pose.pose, pose);
@@ -146,6 +163,9 @@ bool OvertakingManeuver::publish_trajectory(
   pose_tmp.pose.orientation.z = 0;
   pose_tmp.pose.orientation.w = 1;
 
+  // init temp pose in map frame
+  geometry_msgs::PoseStamped pose_tmp_map;
+
   double y_t_0 = calculate_y_at_t(input_width, total_time, 0);
 
   double time = 0;
@@ -160,9 +180,7 @@ bool OvertakingManeuver::publish_trajectory(
         (((-1) * y + y_t_0) * traffic_direction) + current_pose.pose.position.y;
     pose_tmp.pose.position.z = (0) + current_pose.pose.position.z;
 
-    // transform
-    geometry_msgs::PoseStamped pose_tmp_map;
-    tflistener->transformPose(robot_name + "/map", pose_tmp, pose_tmp_map);
+    pose_tmp_map = transform(pose_tmp);
 
     // push_back
     pose_tmp.header.frame_id = path_pose_frame_id;
@@ -183,9 +201,7 @@ bool OvertakingManeuver::publish_trajectory(
         ((y)*traffic_direction) + current_pose.pose.position.y;
     pose_tmp.pose.position.z = (0) + current_pose.pose.position.z;
 
-    // transform
-    geometry_msgs::PoseStamped pose_tmp_map;
-    tflistener->transformPose(robot_name + "/map", pose_tmp, pose_tmp_map);
+    pose_tmp_map = transform(pose_tmp);
 
     // push_back
     pose_tmp.header.frame_id = path_pose_frame_id;
@@ -200,9 +216,7 @@ bool OvertakingManeuver::publish_trajectory(
 
     pose_tmp.pose.position.x += distance;
 
-    // transform
-    geometry_msgs::PoseStamped pose_tmp_map;
-    tflistener->transformPose(robot_name + "/map", pose_tmp, pose_tmp_map);
+    pose_tmp_map = transform(pose_tmp);
 
     // push_back
     pose_tmp.header.frame_id = path_pose_frame_id;
@@ -213,7 +227,7 @@ bool OvertakingManeuver::publish_trajectory(
   }
 
   // rotate
-  rotate_path(&path_tmp, tflistener);
+  rotate_path(&path_tmp);
 
   // finish
   path_tmp.header.frame_id = path_frame_id;

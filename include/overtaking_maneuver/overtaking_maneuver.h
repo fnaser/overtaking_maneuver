@@ -58,7 +58,8 @@ private:
                           double time_t);
   double calculate_y_at_t(double input_width, double total_time, double time_t);
   void odom_callback(const nav_msgs::Odometry::ConstPtr &odom);
-  void rotate_path(nav_msgs::Path *path, tf::TransformListener *tflistener);
+  void rotate_path(nav_msgs::Path *path);
+  geometry_msgs::PoseStamped transform(geometry_msgs::PoseStamped pose_tmp);
 
 public:
   ~OvertakingManeuver();

@@ -13,7 +13,7 @@ void test_tf(tf::TransformListener *tflistener) {
     tflistener->lookupTransform(robot_name + "/map", robot_name + "/odom",
                                ros::Time(0), transform);
   } catch (tf::TransformException ex) {
-    ROS_ERROR("%s", ex.what());
+    ROS_ERROR("%s %s", node_name.c_str(), ex.what());
     ros::Duration(1.0).sleep();
   }
 }

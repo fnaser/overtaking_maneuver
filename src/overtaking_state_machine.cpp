@@ -129,7 +129,7 @@ int main(int argc, char **argv) {
       service_name);
 
   // debugging
-  sleep(2);
+  sleep(3);
   debug_path();
 
   ros::spin();
