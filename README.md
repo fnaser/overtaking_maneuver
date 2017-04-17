@@ -18,7 +18,7 @@ source /opt/ros/<ros>/setup.bash
 source ~/catvehicle_ws/devel/setup.bash
 ```
 
-# Installation Indigo
+# Installation Indigo (recommended)
 
  - http://releases.ubuntu.com/14.04/
  - http://wiki.ros.org/indigo/Installation/Ubuntu
@@ -44,5 +44,6 @@ sudo apt-get install ros-kinetic-controller-manager ros-kinetic-ros-control ros-
 roscore
 rqt
 roslaunch catvehicle 2_lidars_2_cars.launch
+roslaunch catvehicle hector_slam.launch
 roslaunch overtaking_maneuver overtaking_maneuver.launch
 ```
