@@ -63,7 +63,6 @@ void debug_path() {
 
     // debugging
     pub_overtaking_trajectory.publish(srv.response.path_map_frame);
-    published_new_path = true;
 
   } else {
     ROS_ERROR("failed to call service in debug mode");
