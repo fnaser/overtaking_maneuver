@@ -12,7 +12,6 @@ sudo apt-get install git
 sudo apt-get install chromium-browser
 ~/catvehicle_ws/src/$ git clone https://github.com/fnaser/catvehicle.git
 ~/catvehicle_ws/src/$ git clone https://github.com/fnaser/overtaking_maneuver.git
-~/catvehicle_ws/src/$ git clone https://github.com/fnaser/obstaclestopper.git
 ~/.bashrc:
 source /opt/ros/<ros>/setup.bash
 source ~/catvehicle_ws/devel/setup.bash
