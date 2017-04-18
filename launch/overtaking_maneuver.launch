@@ -1,6 +1,5 @@
 <launch>
   <arg name="veh"/>
-  <arg name="run_button_sim" value="false"/>
 
   <group ns="$(arg veh)">
 
@@ -9,8 +8,6 @@
       <param name="robot_name" value="$(arg veh)"/>
       <param name="traffic_direction" value="-1"/>
     </node>
-
-    <node name="button_simulator_node" pkg="overtaking_maneuver" type="button_simulator" respawn="false" output="screen" if="$(arg run_button_sim)"/>
 
     <node name="overtaking_state_machine_node" pkg="overtaking_maneuver" type="overtaking_state_machine" respawn="false" output="screen">
       <param name="input_vel" value="5"/>
