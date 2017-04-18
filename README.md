@@ -45,4 +45,5 @@ rqt
 roslaunch catvehicle 2_lidars_2_cars.launch
 roslaunch catvehicle hector_slam.launch
 roslaunch overtaking_maneuver overtaking_maneuver.launch
+only run during simulation (otherwise safety hazard on hardware platform) roslaunch overtaking_maneuver button_simulator.launch
 ```
