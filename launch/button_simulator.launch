@@ -1,0 +1,9 @@
+<launch>
+
+  <arg name="veh"/>
+
+  <group ns="$(arg veh)">
+    <node name="button_simulator_node" pkg="overtaking_maneuver" type="button_simulator" respawn="false" output="screen"/>
+  </group>
+
+</launch>
