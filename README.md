@@ -7,7 +7,8 @@ Based on:
 - http://cps-vo.org/group/CATVehicleTestbed
 
 Video:
-https://youtu.be/ckuMcm-LieA
+ - UTown https://youtu.be/ckuMcm-LieA
+ - Simulation https://youtu.be/CojjIUHBHqY
 
 Instructions:
 https://github.com/fnaser/overtaking_maneuver/blob/master/installation.md
