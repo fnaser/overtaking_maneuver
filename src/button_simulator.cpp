@@ -23,15 +23,14 @@ int main(int argc, char **argv) {
   ros::Publisher pub_reverse =
       n.advertise<std_msgs::Bool>("button_state_reverse", 1);
   ros::Publisher pub_button_status =
-      n.advertise<std_msgs::String>("button_status", 1);
+      n.advertise<std_msgs::String>("button_sim_status", 1);
   ros::Rate r(rate);
 
   while (n.ok()) {
-    // autonomous driving mode: "on"
     button_state_automode.data = true;
     button_state_emergency.data = false;
     button_state_reverse.data = false;
-    button_status.data = "Auto";
+    button_status.data = "simulation_on";
 
     pub_automode.publish(button_state_automode);
     pub_emergency.publish(button_state_emergency);

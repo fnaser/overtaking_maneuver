@@ -22,8 +22,10 @@ using namespace std;
 class OvertakingManeuver {
 
 private:
-  // Time step size
-  double time_step_size;
+  // Time and distance step size
+  double step_size;
+  // Traffic direction
+  double traffic_direction;
   // Current pose of ego vehicle
   geometry_msgs::PoseStamped current_pose;
   // Params
@@ -37,7 +39,6 @@ private:
   double input_width;
   double input_max_acc;
 
-  string sub_user_input_topic;
   string sub_odom_topic;
   string pub_current_pose_topic;
   string robot_name;
@@ -46,8 +47,8 @@ private:
 
   ros::NodeHandle *n;
   tf::TransformListener *tflistener;
-  ros::Publisher pub_trajectory, pub_trajectory_test, pub_current_pose;
-  ros::Subscriber sub_odom, sub_user_input;
+  ros::Publisher pub_current_pose;
+  ros::Subscriber sub_odom;
 
   double calculate_total_dis(double input_vel, double input_width,
                              double input_max_acc);
@@ -56,9 +57,9 @@ private:
   double calculate_x_at_t(double input_vel, double dis, double total_time,
                           double time_t);
   double calculate_y_at_t(double input_width, double total_time, double time_t);
-  void user_input_callback(const std_msgs::Bool::ConstPtr &msg);
   void odom_callback(const nav_msgs::Odometry::ConstPtr &odom);
-  void rotate_path(nav_msgs::Path *path, tf::TransformListener *tflistener);
+  void rotate_path(nav_msgs::Path *path);
+  geometry_msgs::PoseStamped transform(geometry_msgs::PoseStamped pose_tmp);
 
 public:
   ~OvertakingManeuver();
@@ -66,7 +67,8 @@ public:
   OvertakingManeuver(ros::NodeHandle *n, tf::TransformListener *tflistener,
                      bool use_dynamic_reconfig, string sub_odom_topic,
                      string pub_current_pose_topic, string robot_name,
-                     string path_frame_id, string path_pose_frame_id);
+                     string path_frame_id, string path_pose_frame_id,
+                     double traffic_direction);
 
   bool publish_trajectory(
       overtaking_maneuver::PublishOvertakingTrajectory::Request &req,
