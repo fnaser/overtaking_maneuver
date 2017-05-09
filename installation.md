@@ -13,11 +13,12 @@ source ~/catvehicle_ws/devel/setup.bash
 
  - http://releases.ubuntu.com/14.04/
  - http://wiki.ros.org/indigo/Installation/Ubuntu
+ - `ros-indigo-fake-localization`
  - http://cps-vo.org/node/26602
  - http://cps-vo.org/node/26591
  - http://gazebosim.org/tutorials?tut=install_ubuntu
  - download Gazebo files https://bitbucket.org/osrf/gazebo_models/downloads/
- - mv to ~/.gazebo/models
+ - mv files to ~/.gazebo/models
 
 # Installation Kinetic
 
