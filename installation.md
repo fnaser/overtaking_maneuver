@@ -9,7 +9,7 @@ source /opt/ros/<ros>/setup.bash
 source ~/catvehicle_ws/devel/setup.bash
 ```
 
-# Installation Indigo (recommended)
+# Installation Ubuntu 14 and ROS Indigo
 
  - http://releases.ubuntu.com/14.04/
  - http://wiki.ros.org/indigo/Installation/Ubuntu
@@ -19,16 +19,6 @@ source ~/catvehicle_ws/devel/setup.bash
  - http://gazebosim.org/tutorials?tut=install_ubuntu
  - download Gazebo files https://bitbucket.org/osrf/gazebo_models/downloads/
  - mv files to ~/.gazebo/models
-
-# Installation Kinetic
-
- - http://releases.ubuntu.com/16.04/
- - http://wiki.ros.org/kinetic/Installation/Ubuntu
-```
-sudo apt-get install ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control libpcap0.8-dev
-```
- - https://github.com/ros-simulation/gazebo_ros_pkgs
- - http://gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros
 
 # How to run the simulaton
 
